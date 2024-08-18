@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>YouTube Transcript Extractor</title>
+  <style>
+    body { width: 300px; padding: 10px; }
+    textarea { width: 100%; height: 150px; margin-bottom: 10px; }
+    #statusMessage { color: #555; margin-bottom: 10px; }
+    button { width: 100%; padding: 5px; margin-bottom: 5px; }
+    #llmLink, #prefixInput { width: 100%; margin-bottom: 5px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <textarea id="transcript" readonly></textarea>
+  <p id="statusMessage"></p>
+  <label for="prefixInput">Enter prefix text:</label>
+  <input type="text" id="prefixInput" placeholder="Summarize the transcript">
+  <label for="llmLink">Enter the LLM page of your choice:</label>
+  <input type="text" id="llmLink" placeholder="https://chat.openai.com/">
+  <button id="copyButton" disabled>Copy to Clipboard</button>
+  <button id="copyAndGoButton" disabled>Copy and Go to LLM Page</button>
+  <script src="popup.js"></script>
+</body>
+</html>
