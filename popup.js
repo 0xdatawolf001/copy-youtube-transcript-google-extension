@@ -6,19 +6,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const llmLinkInput = document.getElementById('llmLink');
     const prefixInput = document.getElementById('prefixInput');
 
-    transcriptArea.value = '';
-    updateUI(false, "Waiting for transcript...");
-
-    // Load saved LLM link and prefix
-    chrome.storage.sync.get(['llmLink', 'prefix'], function(data) {
-        if (data.llmLink) {
-            llmLinkInput.value = data.llmLink;
-        }
-        if (data.prefix) {
-            prefixInput.value = data.prefix;
-        }
-    });
-
     let activeTabId;
 
     function updateUI(isSuccess, message, transcriptText = '') {
@@ -26,6 +13,37 @@ document.addEventListener('DOMContentLoaded', function() {
         transcriptArea.value = transcriptText;
         copyButton.disabled = !isSuccess;
         copyAndGoButton.disabled = !isSuccess;
+    }
+
+    function getErrorMessage(error) {
+        switch(error) {
+            case 'Not a YouTube video page':
+                return "Please navigate to a YouTube video page to use this extension.";
+            case 'Transcript button not found':
+                return "This video doesn't seem to have a transcript available.";
+            case 'Transcript not available':
+                return "Unable to load the transcript. It might not be available for this video.";
+            default:
+                return "An unexpected error occurred: " + error;
+        }
+    }
+
+    function getFormattedTranscript() {
+        const prefix = prefixInput.value.trim();
+        const transcript = transcriptArea.value.trim();
+        return `${prefix}\n\n\`\`\`\n${transcript}\n\`\`\``;
+    }
+
+    function copyTranscript() {
+        return navigator.clipboard.writeText(getFormattedTranscript());
+    }
+
+    function goToLLMPage() {
+        const llmLink = llmLinkInput.value || 'https://chat.openai.com/';
+        chrome.storage.sync.set({llmLink: llmLink}, function() {
+            console.log('LLM link saved');
+        });
+        chrome.tabs.create({ url: llmLink });
     }
 
     function fetchTranscript(tabId) {
@@ -42,6 +60,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Initial UI setup
+    transcriptArea.value = '';
+    updateUI(false, "Waiting for transcript...");
+
+    // Load saved LLM link and prefix
+    chrome.storage.sync.get(['llmLink', 'prefix'], function(data) {
+        if (data.llmLink) {
+            llmLinkInput.value = data.llmLink;
+        }
+        if (data.prefix) {
+            prefixInput.value = data.prefix;
+        }
+    });
 
     // Listen for messages from the background script
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
